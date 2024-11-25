@@ -356,7 +356,7 @@ class SmartEldomBoiler(EldomBoiler):
 
     async def turn_on(self) -> None:
         """Turn the boiler on."""
-        await self.set_operation_mode(STATE_ECO)
+        await self.set_operation_mode(STATE_ELECTRIC)
 
     async def turn_off(self) -> None:
         """Turn the boiler off."""
