@@ -1,10 +1,16 @@
+[![Discord](https://img.shields.io/discord/1312381782942810192?logo=discord&labelColor=white&label=Discord)](https://discord.gg/4sRmgb9Vph)
+[![hassfest](https://github.com/qbaware/homeassistant-eldom/actions/workflows/hassfest-validation.yaml/badge.svg?branch=main)](https://github.com/qbaware/homeassistant-eldom/actions/workflows/hassfest-validation.yaml)
+[![HACS-action](https://github.com/qbaware/homeassistant-eldom/actions/workflows/hacs-action-validation.yaml/badge.svg)](https://github.com/qbaware/homeassistant-eldom/actions/workflows/hacs-action-validation.yaml)
+
+---
+
 # Eldom Integration For Home Assistant
 
 Connect your [Eldom](https://eldominvest.com/en/index.html) devices to Home Assistant and operate them via Eldom's Cloud APIs with [pyeldom](https://github.com/qbaware/pyeldom).
 
 ![eldom-integration](https://github.com/user-attachments/assets/d058d86b-0796-4d2f-b686-e9d4312ecd76)
 
-[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/danielgospodinow)
+[!["Buy Me A Coffee"](https://buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/danielgospodinow), or you can just ⭐️ the repository. I'd love that too. :smile:
 
 ---
 
@@ -16,7 +22,9 @@ Note that there's only one way to control your Eldom devices - via their Cloud A
 
 ### Supported devices
 
-#### Flat boilers
+Currently, there's only support for devices that are managed by the `My Eldom` app (or `myeldom.com`). The devices that are managed via the `Eldom` app (or `iot.myeldom.com`) are NOT supported.
+
+#### 1. Flat boilers
 
 - Operational mode selection
   - `Electric` (corresponds to "Heating")
@@ -32,7 +40,7 @@ Note that there's only one way to control your Eldom devices - via their Cloud A
   - Night energy consumption
   - Saved energy
 
-#### Smart boilers
+#### 2. Smart boilers
 
 - Operational mode selection
   - `Electric` (corresponds to "Heating")
@@ -48,7 +56,7 @@ Note that there's only one way to control your Eldom devices - via their Cloud A
   - Night energy consumption
   - Saved energy
 
-#### (Experimental) Convector heaters
+#### 3. Convector heaters
 
 - Operational mode selection
   - `Heat`
@@ -64,14 +72,19 @@ Note that there's only one way to control your Eldom devices - via their Cloud A
 
 ## Installation
 
-### HACS Installation
+### HACS Installation (Recommended)
 
+0. Install HACS if it's not already installed. Look at [this](https://www.youtube.com/watch?v=0hDyVoDGFbc) video.
 1. Open HACS.
 2. Select `Integrations`, then select the 3-dots in the upper-right corner, then select `Custom Repositories`.
 3. Put the reposity URL in the `Repository` field, then select `Integration` in the `Category` dropdown list and click `Add`.
 4. Now, you can search for `Eldom` in HACS and install the integration.
 5. After the installation, you need to restart Home Assistant.
 6. Now, you can proceed with [Usage](#usage).
+
+I've made a video tutorial on YouTube on how to do all this:
+
+[![Watch the video](https://img.youtube.com/vi/57qsCXNVMMA/hqdefault.jpg)](https://youtu.be/57qsCXNVMMA)
 
 ### Custom components
 
@@ -84,3 +97,38 @@ Note that there's only one way to control your Eldom devices - via their Cloud A
 
 - After installation, go to `Settings > Devices & services > Add integration` and search for `Eldom`.
 - Provide an Eldom account `email` and `password` and click `Submit`.
+
+## Custom UI Card
+
+If you find the default card boring, you can try out this custom one.
+
+![image](https://github.com/user-attachments/assets/623fef6c-1c99-4ec2-ae4e-e9db7400e784)
+
+<details>
+  <summary>YAML</summary>
+  
+  ```yaml
+  features:
+    - type: target-temperature
+    - type: water-heater-operation-modes
+      operation_modes:
+        - "off"
+        - eco
+        - electric
+        - high_demand
+  type: tile
+  entity: water_heater.flat_boiler_edab63cb2b9c
+  color: primary
+  name: Flat Boiler
+  hide_state: false
+  show_entity_picture: false
+  vertical: true
+  state_content:
+    - state
+    - last-changed
+  ```
+</details>
+
+## Community
+
+For additional questions, you can head over to our [Discord channel](https://discord.gg/4sRmgb9Vph).
