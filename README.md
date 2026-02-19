@@ -14,15 +14,21 @@ Connect your [Eldom](https://eldominvest.com/en/index.html) devices to Home Assi
 
 ---
 
+## ⚠️ Attention
+
+Release [5.0.1](https://github.com/qbaware/homeassistant-eldom/releases/tag/5.0.1) contains a breaking change in the config flow. It requires you to re-add your account. This is **safe** for your existing automations and no negative impact is expected.
+
+## Supported devices
+
+Currently, there's primarely support for devices that are managed by the `My Eldom` app (or the `myeldom.com` website).
+
+Devices that are managed via the `Eldom` app (or the `iot.myeldom.com` website) are in experimental support from release [5.0.1](https://github.com/qbaware/homeassistant-eldom/releases/tag/5.0.1). Some of the devices under experimentation are flat boilers and convector heaters.
+
 ## Features
 
 This integration allows you to control Eldom devices via Home Assistant.
 
 Note that there's only one way to control your Eldom devices - via their Cloud APIs. There's no support for local network control.
-
-### Supported devices
-
-Currently, there's only support for devices that are managed by the `My Eldom` app (or `myeldom.com`). The devices that are managed via the `Eldom` app (or `iot.myeldom.com`) are NOT supported.
 
 #### 1. Flat boilers
 
@@ -56,7 +62,20 @@ Currently, there's only support for devices that are managed by the `My Eldom` a
   - Night energy consumption
   - Saved energy
 
-#### 3. Convector heaters
+#### 3. Naturela boilers
+
+- Operational mode selection
+  - `Electric` (corresponds to "On")
+  - `Eco` (corresponds to "Holiday")
+  - `Off`
+- Display current temperature
+- Enable `Powerful mode` switch (only works while the boiler is not off)
+- Display sensors
+  - Heater is currently on/off
+  - Day energy consumption
+  - Night energy consumption
+
+#### 4. Convector heaters
 
 - Operational mode selection
   - `Heat`

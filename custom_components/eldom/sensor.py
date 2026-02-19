@@ -1,7 +1,5 @@
 """Sensor platform for Eldom integration."""
 
-import logging
-
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
@@ -14,24 +12,16 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DEVICE_TYPE_FLAT_BOILER, DEVICE_TYPE_SMART_BOILER, DOMAIN
+from .const import (
+    DEVICE_TYPE_FLAT_BOILER_ELDOM,
+    DEVICE_TYPE_NATURELA_BOILER_ELDOM,
+    DEVICE_TYPE_SMART_BOILER_ELDOM,
+    DOMAIN,
+)
 from .coordinator import EldomCoordinator
 from .eldom_boiler import EldomBoiler
 from .models import EldomData
 
-_LOGGER = logging.getLogger(__name__)
-
-DAY_ENERGY_CONSUMPTION_SENSOR_NAME = "Day Energy Consumption"
-DAY_ENERGY_CONSUMPTION_ICON = "mdi:lightning-bolt"
-
-NIGHT_ENERGY_CONSUMPTION_SENSOR_NAME = "Night Energy Consumption"
-NIGHT_ENERGY_CONSUMPTION_ICON = "mdi:lightning-bolt"
-
-SAVED_ENERGY_SENSOR_NAME = "Saved Energy"
-SAVED_ENERGY_SENSOR_ICON = "mdi:lightning-bolt"
-
-HEATER_SENSOR_NAME = "Heater"
-HEATER_SENSOR_ICON = "mdi:heat-wave"
 HEATER_STATE_ON = "On"
 HEATER_STATE_OFF = "Off"
 
@@ -50,7 +40,7 @@ async def async_setup_entry(
     entities_to_add = []
 
     for flat_boiler in eldom_data.coordinator.data.get(
-        DEVICE_TYPE_FLAT_BOILER
+        DEVICE_TYPE_FLAT_BOILER_ELDOM
     ).values():
         entities_to_add.append(
             EldomBoilerDayEnergyConsumptionSensor(flat_boiler, eldom_data.coordinator)
@@ -64,9 +54,12 @@ async def async_setup_entry(
         entities_to_add.append(
             EldomBoilerHeaterSensor(flat_boiler, eldom_data.coordinator)
         )
+        entities_to_add.append(
+            EldomBoilerEnergyUsageResetDateSensor(flat_boiler, eldom_data.coordinator)
+        )
 
     for smart_boiler in eldom_data.coordinator.data.get(
-        DEVICE_TYPE_SMART_BOILER
+        DEVICE_TYPE_SMART_BOILER_ELDOM
     ).values():
         entities_to_add.append(
             EldomBoilerDayEnergyConsumptionSensor(smart_boiler, eldom_data.coordinator)
@@ -81,6 +74,31 @@ async def async_setup_entry(
         )
         entities_to_add.append(
             EldomBoilerHeaterSensor(smart_boiler, eldom_data.coordinator)
+        )
+        entities_to_add.append(
+            EldomBoilerEnergyUsageResetDateSensor(smart_boiler, eldom_data.coordinator)
+        )
+
+    for naturela_boiler in eldom_data.coordinator.data.get(
+        DEVICE_TYPE_NATURELA_BOILER_ELDOM
+    ).values():
+        entities_to_add.append(
+            EldomBoilerDayEnergyConsumptionSensor(
+                naturela_boiler, eldom_data.coordinator
+            )
+        )
+        entities_to_add.append(
+            EldomBoilerNightEnergyConsumptionSensor(
+                naturela_boiler, eldom_data.coordinator
+            )
+        )
+        entities_to_add.append(
+            EldomBoilerHeaterSensor(naturela_boiler, eldom_data.coordinator)
+        )
+        entities_to_add.append(
+            EldomBoilerEnergyUsageResetDateSensor(
+                naturela_boiler, eldom_data.coordinator
+            )
         )
 
     async_add_entities(entities_to_add)
@@ -112,12 +130,12 @@ class EldomBoilerDayEnergyConsumptionSensor(SensorEntity, CoordinatorEntity):
     @property
     def name(self) -> str:
         """Return the name of the sensor."""
-        return f"{self._eldom_boiler.name}'s {DAY_ENERGY_CONSUMPTION_SENSOR_NAME}"
+        return f"{self._eldom_boiler.name}'s Day Energy Consumption"
 
     @property
     def icon(self) -> str:
         """Return the icon of the sensor."""
-        return DAY_ENERGY_CONSUMPTION_ICON
+        return "mdi:lightning-bolt"
 
     @property
     def device_class(self) -> SensorDeviceClass:
@@ -175,12 +193,12 @@ class EldomBoilerNightEnergyConsumptionSensor(SensorEntity, CoordinatorEntity):
     @property
     def name(self) -> str:
         """Return the name of the sensor."""
-        return f"{self._eldom_boiler.name}'s {NIGHT_ENERGY_CONSUMPTION_SENSOR_NAME}"
+        return f"{self._eldom_boiler.name}'s Night Energy Consumption"
 
     @property
     def icon(self) -> str:
         """Return the icon of the sensor."""
-        return NIGHT_ENERGY_CONSUMPTION_ICON
+        return "mdi:lightning-bolt"
 
     @property
     def device_class(self) -> SensorDeviceClass:
@@ -238,12 +256,12 @@ class EldomBoilerSavedEnergySensor(SensorEntity, CoordinatorEntity):
     @property
     def name(self) -> str:
         """Return the name of the sensor."""
-        return f"{self._eldom_boiler.name}'s {SAVED_ENERGY_SENSOR_NAME}"
+        return f"{self._eldom_boiler.name}'s Saved Energy"
 
     @property
     def icon(self) -> str:
         """Return the icon of the sensor."""
-        return SAVED_ENERGY_SENSOR_ICON
+        return "mdi:lightning-bolt"
 
     @property
     def device_class(self) -> SensorDeviceClass:
@@ -296,12 +314,12 @@ class EldomBoilerHeaterSensor(SensorEntity, CoordinatorEntity):
     @property
     def name(self) -> str:
         """Return the name of the sensor."""
-        return f"{self._eldom_boiler.name}'s {HEATER_SENSOR_NAME}"
+        return f"{self._eldom_boiler.name}'s Heater"
 
     @property
     def icon(self) -> str:
         """Return the icon of the heater sensor."""
-        return HEATER_SENSOR_ICON
+        return "mdi:heat-wave"
 
     @property
     def device_class(self) -> SensorDeviceClass:
@@ -319,6 +337,57 @@ class EldomBoilerHeaterSensor(SensorEntity, CoordinatorEntity):
         return (
             HEATER_STATE_ON if self._eldom_boiler.heater_enabled else HEATER_STATE_OFF
         )
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        self._eldom_boiler = self.coordinator.data.get(self._eldom_boiler.type).get(
+            self._eldom_boiler.id
+        )
+
+        self.async_write_ha_state()
+
+
+class EldomBoilerEnergyUsageResetDateSensor(SensorEntity, CoordinatorEntity):
+    """Representation of an Eldom boiler's energy usage reset date."""
+
+    def __init__(
+        self, eldom_boiler: EldomBoiler, coordinator: EldomCoordinator
+    ) -> None:
+        """Initialize a sensor for an Eldom boiler's heater."""
+        super().__init__(coordinator)
+
+        self._eldom_boiler = eldom_boiler
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return device information about this water heater."""
+        return DeviceInfo(
+            identifiers={(DOMAIN, self._eldom_boiler.device_id)},
+        )
+
+    @property
+    def unique_id(self) -> str:
+        """Return a unique ID."""
+        return f"{self._eldom_boiler.device_id}-energy-usage-reset-date-sensor"
+
+    @property
+    def name(self) -> str:
+        """Return the name of the sensor."""
+        return f"{self._eldom_boiler.name}'s Energy Usage Reset Date"
+
+    @property
+    def icon(self) -> str:
+        """Return the icon of the heater sensor."""
+        return "mdi:calendar-range"
+
+    @property
+    def native_value(self) -> str:
+        """Return the state of the sensor."""
+        if self._eldom_boiler.energy_usage_reset_date == "0001-01-01T00:00:00Z":
+            return "Never"
+
+        return self._eldom_boiler.energy_usage_reset_date
 
     @callback
     def _handle_coordinator_update(self) -> None:
